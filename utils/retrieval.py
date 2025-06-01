@@ -15,12 +15,13 @@ index = faiss.read_index(faiss_path)
 with open(meta_path, "rb") as f:
     metadata = pickle.load(f)
 
-def get_embedding(text):
-    response = openai.Embedding.create(
+def get_embedding(text: str) -> list[float]:
+    response = openai.embeddings.create(
         input=[text],
         model="text-embedding-3-small"
     )
-    return response['data'][0]['embedding']
+    return response["data"][0]["embedding"]
+
 
 def query_faiss(query, k=20):
     query_embedding = get_embedding(query)
