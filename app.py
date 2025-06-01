@@ -4,7 +4,7 @@ from utils.retrieval import query_faiss, generate_answer, set_openai_api_key
 from utils.helpers import load_chat, save_chat, list_chats
 
 # Initialize OpenAI client with key from Streamlit secrets
-set_openai_api_key(st.secrets["api_keys"]["openai"])
+set_openai_api_key(st.secrets["api_keys"]["OPENAI_API_KEY"])
 
 st.set_page_config(page_title="TripSafe Agent", layout="wide")
 
