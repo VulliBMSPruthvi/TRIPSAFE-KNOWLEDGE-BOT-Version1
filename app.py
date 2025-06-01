@@ -1,10 +1,10 @@
 import streamlit as st
-import uuid, os, openai
-from utils.retrieval import query_faiss, generate_answer
-from utils.helpers   import load_chat, save_chat, list_chats
+import uuid
+from utils.retrieval import query_faiss, generate_answer, set_openai_api_key
+from utils.helpers import load_chat, save_chat, list_chats
 
-# Load OpenAI key from Streamlit secrets
-openai.api_key = st.secrets["api_keys"]["openai"]
+# Initialize OpenAI client with key from Streamlit secrets
+set_openai_api_key(st.secrets["api_keys"]["openai"])
 
 st.set_page_config(page_title="TripSafe Agent", layout="wide")
 

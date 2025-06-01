@@ -1,25 +1,17 @@
-import os
-from openai import OpenAI
 import faiss
 import pickle
 import numpy as np
 
-# Load FAISS index and metadata
-faiss_path = "trip_safe_index.faiss"
-meta_path = "trip_safe_metadata.pkl"
+client = None
 
-index = faiss.read_index(faiss_path)
-with open(meta_path, "rb") as f:
-    metadata = pickle.load(f)
-
-# Initialize OpenAI client using API key from environment variable
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    raise ValueError("OPENAI_API_KEY environment variable is not set.")
-
-client = OpenAI(api_key=api_key)
+def set_openai_api_key(api_key: str):
+    global client
+    from openai import OpenAI
+    client = OpenAI(api_key=api_key)
 
 def get_embedding(text: str) -> list[float]:
+    if client is None:
+        raise ValueError("OpenAI client not initialized. Call set_openai_api_key() first.")
     response = client.embeddings.create(
         input=[text],
         model="text-embedding-3-small"
