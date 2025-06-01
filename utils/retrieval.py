@@ -1,3 +1,4 @@
+import os
 from openai import OpenAI
 import faiss
 import pickle
@@ -11,8 +12,12 @@ index = faiss.read_index(faiss_path)
 with open(meta_path, "rb") as f:
     metadata = pickle.load(f)
 
-# Initialize OpenAI client (will use OPENAI_API_KEY from env)
-client = OpenAI()
+# Initialize OpenAI client using API key from environment variable
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    raise ValueError("OPENAI_API_KEY environment variable is not set.")
+
+client = OpenAI(api_key=api_key)
 
 def get_embedding(text: str) -> list[float]:
     response = client.embeddings.create(
