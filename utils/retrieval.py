@@ -48,16 +48,14 @@ def query_faiss(query, k=20):
 
 
 
-
-def generate_answer(query, results, conversation_history=None):
+def generate_answer(query, results, conversation_context=""):
     """
-    conversation_history: list of dicts like:
-    [
-        {"role": "user", "content": "..."},
-        {"role": "assistant", "content": "..."},
-        ...
-    ]
-    It should contain up to the last 5 user-assistant exchanges.
+    Generate an answer using retrieved documents and provided conversation context.
+    
+    Parameters:
+    - query: str – The latest user query.
+    - results: list of dicts – Retrieved documents with 'source' and 'text' fields.
+    - conversation_context: str – Pre-formatted conversation string (from app.py).
     """
 
     # Format documents context
@@ -65,24 +63,11 @@ def generate_answer(query, results, conversation_history=None):
         f"Source: {r['source']}\nText: {r['text']}" for r in results
     ])
 
-    # Prepare conversation context text from last 5 messages (if any)
-    conversation_text = ""
-    if isinstance(conversation_history, list):
-        try:
-            last_msgs = conversation_history[-5:]
-            conversation_text = "\n".join([
-                f"{msg['role'].capitalize()}: {msg['content']}"
-                for msg in last_msgs if isinstance(msg, dict) and 'role' in msg and 'content' in msg
-            ])
-        except Exception as e:
-            print(f"Error formatting conversation history: {e}")
-            conversation_text = ""
-
-    # Build user prompt with conversation context and documents
-    user_prompt = f"""Given the following documents and recent conversation, answer the query.
+    # Build the user prompt with provided conversation context and documents
+    user_prompt = f"""Given the following documents and recent conversation context, answer the query in detail and accurately.
 
 Conversation:
-{conversation_text}
+{conversation_context}
 
 Documents:
 {documents_text}
