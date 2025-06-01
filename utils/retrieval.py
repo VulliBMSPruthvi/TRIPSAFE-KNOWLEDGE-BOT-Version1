@@ -46,36 +46,71 @@ def query_faiss(query, k=20):
         })
     return results
 
-def generate_answer(query, results, conversation_context=""):
-    context = "\n".join([
+
+
+
+
+def generate_answer(query, results, conversation_history=None):
+    """
+    conversation_history: list of dicts like:
+    [
+        {"role": "user", "content": "..."},
+        {"role": "assistant", "content": "..."},
+        ...
+    ]
+    It should contain up to the last 5 user-assistant exchanges.
+    """
+
+    # Format documents context
+    documents_text = "\n".join([
         f"Source: {r['source']}\nText: {r['text']}" for r in results
     ])
-    prompt = f"""Given the following documents and recent conversation, answer the query.
+
+    # Prepare conversation context text from last 5 messages (if any)
+    conversation_text = ""
+    if conversation_history:
+        # Take last 5 messages and format nicely
+        last_msgs = conversation_history[-5:]
+        conversation_text = "\n".join([f"{msg['role'].capitalize()}: {msg['content']}" for msg in last_msgs])
+
+    # Build user prompt with conversation context and documents
+    user_prompt = f"""Given the following documents and recent conversation, answer the query.
 
 Conversation:
-{conversation_context}
+{conversation_text}
 
 Documents:
-{context}
+{documents_text}
 
 Query:
 {query}
 
 Answer:"""
 
+    system_message = {
+        "role": "system",
+        "content": (
+            "You are supposed to be polite, specific and clear while answering"
+            "You are an expert travel insurance sales representative for TripSafe, a trusted travel insurance provider. "
+            "Use the provided documents and recent conversation context to answer customer queries accurately and in detail. "
+            "Always provide clear, actionable guidance tailored to the customer’s needs. "
+            "Avoid speculation or unrelated information; base all answers strictly on the given documents. "
+            "Be polite, professional, and helpful."
+        )
+    }
+
+    user_message = {
+        "role": "user",
+        "content": user_prompt
+    }
+
+    messages = [system_message, user_message]
+
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {
-                "role": "system",
-                "content": "You are an expert travel insurance sales pitcher of TripSafe. You should answer questions based on provided documents, answer in detail, and guide the customer with correct steps and information."
-            },
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        max_tokens=500,
-        temperature=0.3
+        model="gpt-4o-mini",
+        messages=messages,
+        max_tokens=700,
+        temperature=0.25
     )
+
     return response.choices[0].message.content.strip()
