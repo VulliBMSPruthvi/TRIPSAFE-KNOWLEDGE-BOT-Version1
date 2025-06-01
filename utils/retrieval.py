@@ -20,7 +20,8 @@ def get_embedding(text: str) -> list[float]:
         input=[text],
         model="text-embedding-3-small"
     )
-    return response["data"][0]["embedding"]
+    return response.data[0].embedding
+
 
 
 def query_faiss(query, k=20):
