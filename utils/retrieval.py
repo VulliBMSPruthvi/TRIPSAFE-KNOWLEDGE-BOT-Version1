@@ -1,8 +1,20 @@
 import faiss
 import pickle
 import numpy as np
+import os
 
 client = None
+
+# --- Load FAISS index and metadata from project root ---
+index_path = "trip_safe_index.faiss"
+metadata_path = "trip_safe_metadata.pkl"
+
+if os.path.exists(index_path) and os.path.exists(metadata_path):
+    index = faiss.read_index(index_path)
+    with open(metadata_path, "rb") as f:
+        metadata = pickle.load(f)
+else:
+    raise FileNotFoundError("FAISS index or metadata not found. Please ensure both files exist at project root.")
 
 def set_openai_api_key(api_key: str):
     global client
