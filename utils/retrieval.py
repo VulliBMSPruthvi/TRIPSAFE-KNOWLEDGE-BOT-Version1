@@ -49,7 +49,6 @@ def query_faiss(query, k=20):
 
 
 
-
 def generate_answer(query, results, conversation_history=None):
     """
     conversation_history: list of dicts like:
@@ -68,10 +67,16 @@ def generate_answer(query, results, conversation_history=None):
 
     # Prepare conversation context text from last 5 messages (if any)
     conversation_text = ""
-    if conversation_history:
-        # Take last 5 messages and format nicely
-        last_msgs = conversation_history[-5:]
-        conversation_text = "\n".join([f"{msg['role'].capitalize()}: {msg['content']}" for msg in last_msgs])
+    if isinstance(conversation_history, list):
+        try:
+            last_msgs = conversation_history[-5:]
+            conversation_text = "\n".join([
+                f"{msg['role'].capitalize()}: {msg['content']}"
+                for msg in last_msgs if isinstance(msg, dict) and 'role' in msg and 'content' in msg
+            ])
+        except Exception as e:
+            print(f"Error formatting conversation history: {e}")
+            conversation_text = ""
 
     # Build user prompt with conversation context and documents
     user_prompt = f"""Given the following documents and recent conversation, answer the query.
@@ -90,7 +95,7 @@ Answer:"""
     system_message = {
         "role": "system",
         "content": (
-            "You are supposed to be polite, specific and clear while answering"
+            "You are supposed to be polite, specific and clear while answering. "
             "You are an expert travel insurance sales representative for TripSafe, a trusted travel insurance provider. "
             "Use the provided documents and recent conversation context to answer customer queries accurately and in detail. "
             "Always provide clear, actionable guidance tailored to the customer’s needs. "
